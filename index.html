@@ -6,6 +6,7 @@
     <meta name="description" content="e shara app connects handmade makers with customers and nearby medical support.">
     <title>e shara app | Skills, dignity and support</title>
     <link rel="stylesheet" href="styles.css">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 </head>
 <body>
     <header class="site-header">
@@ -18,6 +19,7 @@
             <a href="#how-it-works">How it works</a>
             <a href="#learn">Learn</a>
             <a href="#health-support">Health support</a>
+            <a href="#wellness">Wellness</a>
         </nav>
         <div class="header-actions">
             <button class="icon-button" id="cart-button" type="button" aria-label="Open shopping cart">
@@ -186,9 +188,73 @@
                 <button class="lesson" type="button" data-lesson="Selling your handmade work"><span class="lesson-number">03</span><span><strong>Selling your handmade work</strong><small>All levels · 5 friendly lessons</small></span><b>→</b></button>
             </div>
         </section>
+
+        <section class="organised-dashboard section" id="my-dashboard">
+            <div class="section-heading">
+                <div><p class="eyebrow">One calm place for everything</p><h2>My e shara dashboard</h2></div>
+                <span class="dashboard-user-label" id="dashboard-user-label">Guest view</span>
+            </div>
+            <div class="dashboard-grid">
+                <article class="dashboard-panel dashboard-welcome">
+                    <span class="dashboard-panel-icon">✦</span>
+                    <h3 id="dashboard-welcome-title">Welcome to your support space</h3>
+                    <p id="dashboard-welcome-copy">Log in to see your orders, learning progress, health appointments and earnings in one simple view.</p>
+                    <button class="button button-primary" id="dashboard-action" type="button">Log in to personalise</button>
+                </article>
+                <article class="dashboard-panel">
+                    <div class="panel-heading"><h3>Quick actions</h3><span>4 tools</span></div>
+                    <div class="quick-actions">
+                        <a href="#shop">🛍️ <span>Shop handmade</span></a>
+                        <a href="#wellness">🧘 <span>Start yoga</span></a>
+                        <a href="#funding">🤝 <span>Request funding</span></a>
+                        <a href="#donate">💛 <span>Donate support</span></a>
+                    </div>
+                </article>
+                <article class="dashboard-panel">
+                    <div class="panel-heading"><h3>My progress</h3><span id="dashboard-progress-label">Getting started</span></div>
+                    <div class="progress-row"><span>Profile</span><strong id="profile-progress">25%</strong></div>
+                    <div class="progress-track"><i id="profile-progress-bar" style="width:25%"></i></div>
+                    <div class="progress-row"><span>Wellness habit</span><strong id="wellness-progress">0 days</strong></div>
+                    <div class="progress-track"><i id="wellness-progress-bar" style="width:5%"></i></div>
+                </article>
+            </div>
+        </section>
+
+        <section class="wellness-section section" id="wellness">
+            <div class="wellness-copy">
+                <p class="eyebrow">Gentle movement with guidance</p>
+                <h2>Yoga assisted trainer</h2>
+                <p>Choose a comfortable session. The trainer speaks one step at a time and reminds you to breathe. Stop anytime if you feel pain or discomfort.</p>
+                <div class="trainer-controls">
+                    <label for="yoga-level">Choose your session</label>
+                    <select id="yoga-level">
+                        <option value="chair">Chair yoga · 5 minutes</option>
+                        <option value="gentle">Gentle stretch · 8 minutes</option>
+                        <option value="breath">Breathing practice · 3 minutes</option>
+                    </select>
+                    <button class="button button-dark" id="start-yoga-button" type="button">Start assisted session</button>
+                    <button class="button button-light" id="yoga-voice-button" type="button">🔊 Read instruction</button>
+                </div>
+            </div>
+            <div class="trainer-card" aria-live="polite">
+                <span class="trainer-step" id="yoga-step">Ready when you are</span>
+                <strong id="yoga-instruction">Sit comfortably, keep your shoulders relaxed and breathe slowly.</strong>
+                <div class="trainer-timer" id="yoga-timer">05:00</div>
+                <div class="trainer-actions"><button class="card-action" id="yoga-next-button" type="button">Next step →</button><button class="card-action" id="yoga-stop-button" type="button">Finish</button></div>
+            </div>
+        </section>
+
+        <section class="support-forms section" id="funding">
+            <div class="section-heading"><div><p class="eyebrow">Grow with dignity</p><h2>Funding and community support</h2></div></div>
+            <div class="support-grid">
+                <article class="support-card"><span class="card-icon">🤝</span><h3>Register for funding</h3><p>Tell us about your skill, tools and the support you need to start earning.</p><button class="button button-primary support-open" data-form="funding" type="button">Open funding form</button></article>
+                <article class="support-card" id="donate"><span class="card-icon">💛</span><h3>Donate to a maker</h3><p>Your contribution can support materials, training, health and respectful care.</p><button class="button button-dark support-open" data-form="donation" type="button">Register a donation</button></article>
+                <article class="support-card" id="policies"><span class="card-icon">📄</span><h3>Policies and trust</h3><p>Read how we handle privacy, payments, community safety and responsible support.</p><button class="card-action" id="policy-button" type="button">Read our policies →</button></article>
+            </div>
+        </section>
     </main>
 
-    <footer class="site-footer"><span>© 2026 e shara app</span><span>Built on skill, dignity and community.</span></footer>
+    <footer class="site-footer"><span>© 2026 e shara app</span><span>Built on skill, dignity and community.</span><span><button class="footer-link" id="footer-policy-button" type="button">Privacy & policies</button></span></footer>
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
     <div class="modal-backdrop" id="login-modal" hidden>
         <div class="modal" role="dialog" aria-modal="true" aria-labelledby="login-title">
@@ -210,6 +276,27 @@
                 <label id="manager-city-label" for="manager-city" hidden>City ID</label><input id="manager-city" type="text" hidden placeholder="Paste city ID">
                 <button class="button button-primary" type="submit">Save details</button>
             </form>
+        </div>
+        <div class="modal-backdrop" id="support-modal" hidden>
+            <div class="modal" role="dialog" aria-modal="true" aria-labelledby="support-title">
+                <button class="modal-close support-close" type="button" aria-label="Close support form">×</button>
+                <p class="eyebrow">e shara support</p><h2 id="support-title">Register for support</h2>
+                <form id="support-form">
+                    <label for="support-name">Your name</label><input id="support-name" required placeholder="Enter your name">
+                    <label for="support-contact">Phone or email</label><input id="support-contact" required placeholder="How can we contact you?">
+                    <label for="support-need">What do you need?</label><textarea id="support-need" rows="3" required placeholder="Tell us in simple words"></textarea>
+                    <label id="support-amount-label" for="support-amount" hidden>Donation amount (₹)</label><input id="support-amount" type="number" min="1" hidden placeholder="Enter amount">
+                    <button class="button button-primary" type="submit">Submit securely</button>
+                </form>
+                <p class="modal-note">This registration records your request. A verified e shara support partner will contact you.</p>
+            </div>
+        </div>
+        <div class="modal-backdrop" id="policy-modal" hidden>
+            <div class="modal policy-modal" role="dialog" aria-modal="true" aria-labelledby="policy-title">
+                <button class="modal-close policy-close" type="button" aria-label="Close policies">×</button>
+                <p class="eyebrow">Trust and transparency</p><h2 id="policy-title">e shara policies</h2>
+                <div class="policy-list"><h3>Privacy</h3><p>We use account details only to provide marketplace, support and appointment services. Never share passwords or payment secrets.</p><h3>Payments</h3><p>Online payments are processed by the configured payment provider. e shara never stores card or UPI credentials.</p><h3>Community care</h3><p>Funding, donations and medical support are reviewed by the e shara team. They are not guaranteed medical or financial advice.</p><h3>Respect and safety</h3><p>We do not tolerate harassment, exploitation or discrimination. Report concerns to the support team.</p></div>
+            </div>
         </div>
     </div>
     <script src="app.js"></script>

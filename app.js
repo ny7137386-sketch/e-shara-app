@@ -91,7 +91,27 @@ document.querySelector("#cart-button").addEventListener("click", async () => {
         if (!data.items.length) return showToast("Your cart is empty. Explore handmade products!");
         const address = window.prompt(`Your cart total is ₹${Number(data.total).toLocaleString("en-IN")}. Enter a delivery address to place the order:`);
         if (!address) return;
-        await apiFetch("/orders", {method:"POST", body:JSON.stringify({shippingAddress:address})});
+        const { order } = await apiFetch("/orders", {method:"POST", body:JSON.stringify({shippingAddress:address})});
+        const payment = await apiFetch("/payments/create-order", {method:"POST", body:JSON.stringify({orderId:order.id})});
+        if (!window.Razorpay) throw new Error("Payment checkout is unavailable. Please try again.");
+        await new Promise((resolve, reject) => {
+            const checkout = new Razorpay({
+                key: payment.keyId,
+                order_id: payment.paymentOrder.id,
+                amount: payment.paymentOrder.amount,
+                currency: payment.paymentOrder.currency,
+                name: "e shara app",
+                description: "Handmade product order",
+                handler: async response => {
+                    try {
+                        await apiFetch("/payments/verify", {method:"POST", body:JSON.stringify({...response, orderId:order.id})});
+                        resolve();
+                    } catch (error) { reject(error); }
+                },
+                modal: { ondismiss: () => reject(new Error("Payment was cancelled")) }
+            });
+            checkout.open();
+        });
         setCartCount(0);
         showToast("Order placed successfully. Thank you for supporting makers!");
     } catch (error) { showToast(error.message); }
@@ -265,3 +285,54 @@ if (SpeechRecognition) {
     voiceStatus.textContent = "Tap for simple help options";
     voiceButton.addEventListener("click", () => showToast("Voice help is not supported in this browser. Please use the buttons below."));
 }
+
+const supportModal = document.querySelector("#support-modal");
+const supportForm = document.querySelector("#support-form");
+let supportType = "funding";
+document.querySelectorAll(".support-open").forEach(button => button.addEventListener("click", () => {
+    supportType = button.dataset.form;
+    const donation = supportType === "donation";
+    document.querySelector("#support-title").textContent = donation ? "Register a donation" : "Register for funding";
+    document.querySelector("#support-need").placeholder = donation ? "Who or what would you like to support?" : "What skill, tool or opportunity would help you earn?";
+    document.querySelector("#support-amount").hidden = !donation;
+    document.querySelector("#support-amount-label").hidden = !donation;
+    supportModal.hidden = false;
+}));
+document.querySelectorAll(".support-close").forEach(button => button.addEventListener("click", () => { supportModal.hidden = true; }));
+supportForm.addEventListener("submit", event => {
+    event.preventDefault();
+    const record = {type: supportType, name: document.querySelector("#support-name").value, contact: document.querySelector("#support-contact").value, need: document.querySelector("#support-need").value, amount: document.querySelector("#support-amount").value, createdAt: new Date().toISOString()};
+    localStorage.setItem(`e-shara-${supportType}-request`, JSON.stringify(record));
+    supportModal.hidden = true;
+    supportForm.reset();
+    showToast(supportType === "donation" ? "Thank you. Your donation request is registered." : "Your funding request is registered for review.");
+});
+
+const policyModal = document.querySelector("#policy-modal");
+document.querySelectorAll("#policy-button, #footer-policy-button").forEach(button => button.addEventListener("click", () => { policyModal.hidden = false; }));
+document.querySelector(".policy-close").addEventListener("click", () => { policyModal.hidden = true; });
+
+const yogaSessions = {
+    chair: [{step:"Step 1 of 4", text:"Sit tall. Place both feet on the floor and take three slow breaths.", seconds:75}, {step:"Step 2 of 4", text:"Roll your shoulders gently backward, then relax your arms.", seconds:75}, {step:"Step 3 of 4", text:"Stretch one arm toward the ceiling. Change sides slowly.", seconds:75}, {step:"Step 4 of 4", text:"Rest your hands, smile softly and notice your breathing.", seconds:75}],
+    gentle: [{step:"Step 1 of 3", text:"Stand or sit safely. Reach your arms out and breathe in.", seconds:120}, {step:"Step 2 of 3", text:"Move your neck gently from side to side without forcing.", seconds:120}, {step:"Step 3 of 3", text:"Lower your arms and rest. You did well today.", seconds:120}],
+    breath: [{step:"Step 1 of 3", text:"Breathe in through your nose for four counts.", seconds:60}, {step:"Step 2 of 3", text:"Pause comfortably, then breathe out slowly for six counts.", seconds:60}, {step:"Step 3 of 3", text:"Return to a natural breath and feel calm.", seconds:60}]
+};
+let yogaSteps = yogaSessions.chair; let yogaIndex = 0; let yogaRemaining = yogaSteps[0].seconds; let yogaInterval;
+const speakYoga = () => { if ("speechSynthesis" in window) window.speechSynthesis.speak(new SpeechSynthesisUtterance(document.querySelector("#yoga-instruction").textContent)); };
+function renderYoga() { const step = yogaSteps[yogaIndex]; document.querySelector("#yoga-step").textContent = step.step; document.querySelector("#yoga-instruction").textContent = step.text; document.querySelector("#yoga-timer").textContent = `${String(Math.floor(yogaRemaining / 60)).padStart(2, "0")}:${String(yogaRemaining % 60).padStart(2, "0")}`; }
+document.querySelector("#yoga-level").addEventListener("change", event => { yogaSteps = yogaSessions[event.target.value]; yogaIndex = 0; yogaRemaining = yogaSteps[0].seconds; clearInterval(yogaInterval); renderYoga(); });
+document.querySelector("#start-yoga-button").addEventListener("click", () => { clearInterval(yogaInterval); yogaInterval = setInterval(() => { yogaRemaining -= 1; if (yogaRemaining <= 0) { if (yogaIndex < yogaSteps.length - 1) { yogaIndex += 1; yogaRemaining = yogaSteps[yogaIndex].seconds; renderYoga(); speakYoga(); } else { clearInterval(yogaInterval); showToast("Wonderful work. Remember to drink water and rest."); localStorage.setItem("e-shara-wellness-day", new Date().toDateString()); } } renderYoga(); }, 1000); renderYoga(); speakYoga(); showToast("Your assisted yoga session has started."); });
+document.querySelector("#yoga-next-button").addEventListener("click", () => { yogaIndex = Math.min(yogaIndex + 1, yogaSteps.length - 1); yogaRemaining = yogaSteps[yogaIndex].seconds; renderYoga(); speakYoga(); });
+document.querySelector("#yoga-stop-button").addEventListener("click", () => { clearInterval(yogaInterval); yogaIndex = 0; yogaRemaining = yogaSteps[0].seconds; renderYoga(); showToast("Session paused. Come back whenever you feel ready."); });
+document.querySelector("#yoga-voice-button").addEventListener("click", speakYoga);
+
+function updateDashboard() {
+    const user = currentUser();
+    const label = document.querySelector("#dashboard-user-label");
+    const title = document.querySelector("#dashboard-welcome-title");
+    const copy = document.querySelector("#dashboard-welcome-copy");
+    const action = document.querySelector("#dashboard-action");
+    if (user) { label.textContent = `${user.role} account`; title.textContent = `Welcome, ${user.name.split(" ")[0]}`; copy.textContent = "Your account is ready. Use the quick actions to shop, learn, request support or care for your wellbeing."; action.textContent = "Open account tools"; action.onclick = () => document.querySelector("#shop").scrollIntoView({behavior:"smooth"}); } else { action.onclick = () => document.querySelector("#login-button").click(); }
+    if (localStorage.getItem("e-shara-wellness-day")) { document.querySelector("#wellness-progress").textContent = "1 day"; document.querySelector("#wellness-progress-bar").style.width = "20%"; }
+}
+updateDashboard();
