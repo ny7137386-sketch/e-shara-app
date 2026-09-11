@@ -8,6 +8,7 @@ const productRoutes = require("./routes/products");
 const orderRoutes = require("./routes/orders");
 const adminRoutes = require("./routes/admin");
 const clinicRoutes = require("./routes/clinics");
+const paymentRoutes = require("./routes/payments");
 
 if (!process.env.DATABASE_URL || !process.env.JWT_SECRET) {
   console.warn("DATABASE_URL and JWT_SECRET should be set before starting the server.");
@@ -16,7 +17,17 @@ if (!process.env.DATABASE_URL || !process.env.JWT_SECRET) {
 const app = express();
 const configuredOrigins = (process.env.CLIENT_ORIGIN || "").split(",").map(value => value.trim()).filter(Boolean);
 const allowedOrigins = configuredOrigins.length ? configuredOrigins : ["http://localhost:3000"];
-app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: "cross-origin" },
+  contentSecurityPolicy: {
+    directives: {
+      ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+      "script-src": ["'self'", "https://checkout.razorpay.com"],
+      "frame-src": ["'self'", "https://api.razorpay.com", "https://checkout.razorpay.com"],
+      "img-src": ["'self'", "data:", "https:"]
+    }
+  }
+}));
 app.use(cors({
   origin(origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
@@ -32,6 +43,7 @@ app.use("/api/products", productRoutes);
 app.use("/api", orderRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api", clinicRoutes);
+app.use("/api/payments", paymentRoutes);
 app.use(express.static(path.join(__dirname)));
 app.use("/api", (req, res) => res.status(404).json({ error: "API route not found" }));
 app.get("*", (req, res) => res.sendFile(path.join(__dirname, "index.html")));
