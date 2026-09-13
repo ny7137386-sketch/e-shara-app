@@ -15,7 +15,11 @@ if (!process.env.DATABASE_URL || !process.env.JWT_SECRET) {
 
 const app = express();
 const configuredOrigins = (process.env.CLIENT_ORIGIN || "").split(",").map(value => value.trim()).filter(Boolean);
-const allowedOrigins = configuredOrigins.length ? configuredOrigins : ["http://localhost:3000"];
+const allowedOrigins = new Set([
+  ...configuredOrigins,
+  "https://e-shara-app.onrender.com",
+  "http://localhost:3000"
+]);
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" },
   contentSecurityPolicy: {
@@ -29,7 +33,7 @@ app.use(helmet({
 }));
 app.use(cors({
   origin(origin, callback) {
-    if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+    if (!origin || allowedOrigins.has("*") || allowedOrigins.has(origin)) return callback(null, true);
     return callback(new Error("Origin is not allowed by CORS"));
   }
 }));
