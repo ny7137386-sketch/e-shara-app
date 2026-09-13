@@ -262,6 +262,57 @@ document.querySelector("#entertainment-button").addEventListener("click", () => 
 document.querySelector("#care-button").addEventListener("click", () => showToast("A care partner will call you shortly."));
 document.querySelector("#learn-button").addEventListener("click", () => { document.querySelector("#learn").scrollIntoView({behavior:"smooth"}); showToast("Choose a friendly lesson to begin learning."); });
 document.querySelectorAll(".lesson").forEach(lesson => lesson.addEventListener("click", () => showToast(`${lesson.dataset.lesson} lesson selected. Your learning partner will guide you.`)));
+
+const videoModal = document.querySelector("#video-modal");
+const videoForm = document.querySelector("#video-form");
+const videoGrid = document.querySelector("#video-grid");
+const videoEmpty = document.querySelector("#video-empty");
+const savedVideos = JSON.parse(localStorage.getItem("e-shara-entertainment-videos") || "[]");
+let entertainmentVideos = Array.isArray(savedVideos) ? savedVideos : [];
+function youtubeEmbedUrl(value) {
+    try {
+        const url = new URL(value);
+        let videoId = url.hostname === "youtu.be" ? url.pathname.slice(1) : url.searchParams.get("v");
+        if (!videoId && url.hostname.endsWith("youtube.com") && url.pathname.startsWith("/embed/")) videoId = url.pathname.split("/")[2];
+        return url.hostname === "youtu.be" || url.hostname.endsWith("youtube.com")
+            ? (videoId && /^[A-Za-z0-9_-]{6,20}$/.test(videoId) ? `https://www.youtube-nocookie.com/embed/${videoId}` : null)
+            : null;
+    } catch { return null; }
+}
+function renderEntertainmentVideos() {
+    videoGrid.querySelectorAll(".video-card").forEach(card => card.remove());
+    videoEmpty.hidden = entertainmentVideos.length > 0;
+    entertainmentVideos.forEach((video, index) => {
+        const card = document.createElement("article");
+        card.className = "video-card";
+        card.innerHTML = `<div class="video-frame"><iframe src="${video.embedUrl}" title="${escapeHtml(video.title)}" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div><div class="video-info"><span class="video-category">${escapeHtml(video.category)}</span><h3>${escapeHtml(video.title)}</h3><p>${escapeHtml(video.description || "A video selected for the e shara community.")}</p><button class="video-remove" type="button" data-video-index="${index}">Remove</button></div>`;
+        videoGrid.insertBefore(card, videoEmpty);
+    });
+    videoGrid.querySelectorAll(".video-remove").forEach(button => button.addEventListener("click", () => {
+        entertainmentVideos.splice(Number(button.dataset.videoIndex), 1);
+        localStorage.setItem("e-shara-entertainment-videos", JSON.stringify(entertainmentVideos));
+        renderEntertainmentVideos();
+        showToast("Video removed from this browser.");
+    }));
+}
+function openVideoModal() { videoModal.hidden = false; document.querySelector("#video-name").focus(); }
+document.querySelector("#add-video-button").addEventListener("click", openVideoModal);
+document.querySelector("#empty-add-video-button").addEventListener("click", openVideoModal);
+document.querySelector(".video-close").addEventListener("click", () => { videoModal.hidden = true; });
+videoModal.addEventListener("click", event => { if (event.target === videoModal) videoModal.hidden = true; });
+videoForm.addEventListener("submit", event => {
+    event.preventDefault();
+    const embedUrl = youtubeEmbedUrl(document.querySelector("#video-url").value.trim());
+    if (!embedUrl) { showToast("Please enter a valid YouTube video link."); return; }
+    entertainmentVideos.unshift({title: document.querySelector("#video-name").value.trim(), category: document.querySelector("#video-category").value, embedUrl, description: document.querySelector("#video-description").value.trim()});
+    localStorage.setItem("e-shara-entertainment-videos", JSON.stringify(entertainmentVideos));
+    videoForm.reset();
+    videoModal.hidden = true;
+    renderEntertainmentVideos();
+    showToast("Video added to your entertainment corner.");
+});
+renderEntertainmentVideos();
+
 const voiceButton = document.querySelector("#voice-button");
 const voiceStatus = document.querySelector("#voice-status");
 const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;

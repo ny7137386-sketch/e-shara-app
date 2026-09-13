@@ -175,6 +175,29 @@
             </div>
         </section>
 
+        <section class="entertainment-section section" id="entertainment" aria-labelledby="entertainment-title">
+            <div class="section-heading">
+                <div><p class="eyebrow">Relax, watch and enjoy</p><h2 id="entertainment-title">Entertainment corner</h2></div>
+                <button class="button button-primary" id="add-video-button" type="button">Add a video</button>
+            </div>
+            <div class="entertainment-layout">
+                <div class="video-grid" id="video-grid">
+                    <div class="video-empty" id="video-empty">
+                        <span class="card-icon">▶</span>
+                        <h3>Your friendly video space</h3>
+                        <p>Add a YouTube video for bhajans, old songs, stories, comedy or learning. It will appear here for everyone using this browser.</p>
+                        <button class="button button-dark" id="empty-add-video-button" type="button">Add the first video</button>
+                    </div>
+                </div>
+                <aside class="video-help">
+                    <span class="card-icon">♪</span>
+                    <h3>Made for easy use</h3>
+                    <p>Choose a video, sit comfortably and enjoy. Family members or a support partner can add safe videos for older people.</p>
+                    <small>Tip: copy the link from YouTube and paste it in “Add a video”.</small>
+                </aside>
+            </div>
+        </section>
+
         <section class="learn-section section" id="learn">
             <div class="learn-copy">
                 <p class="eyebrow">Start from where you are</p>
@@ -297,6 +320,20 @@
                 <p class="eyebrow">Trust and transparency</p><h2 id="policy-title">e shara policies</h2>
                 <div class="policy-list"><h3>Privacy</h3><p>We use account details only to provide marketplace, support and appointment services. Never share passwords or payment secrets.</p><h3>Payments</h3><p>Online payments are processed by the configured payment provider. e shara never stores card or UPI credentials.</p><h3>Community care</h3><p>Funding, donations and medical support are reviewed by the e shara team. They are not guaranteed medical or financial advice.</p><h3>Respect and safety</h3><p>We do not tolerate harassment, exploitation or discrimination. Report concerns to the support team.</p></div>
             </div>
+        </div>
+    </div>
+    <div class="modal-backdrop" id="video-modal" hidden>
+        <div class="modal" role="dialog" aria-modal="true" aria-labelledby="video-title">
+            <button class="modal-close video-close" type="button" aria-label="Close add video dialog">×</button>
+            <p class="eyebrow">Entertainment corner</p><h2 id="video-title">Add a video</h2>
+            <form id="video-form">
+                <label for="video-name">Video title</label><input id="video-name" type="text" required maxlength="100" placeholder="For example: Morning bhajan">
+                <label for="video-category">Category</label><select id="video-category"><option>Music</option><option>Stories</option><option>Devotional</option><option>Yoga and learning</option><option>Comedy</option></select>
+                <label for="video-url">YouTube link</label><input id="video-url" type="url" required placeholder="https://www.youtube.com/watch?v=...">
+                <label for="video-description">Short description</label><input id="video-description" type="text" maxlength="180" placeholder="A calming video to enjoy together">
+                <button class="button button-primary" type="submit">Save video</button>
+            </form>
+            <p class="modal-note">Only YouTube links are accepted so the video opens safely inside e shara app.</p>
         </div>
     </div>
     <script src="app.js"></script>

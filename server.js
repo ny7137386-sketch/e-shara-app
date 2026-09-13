@@ -27,7 +27,7 @@ app.use(helmet({
     directives: {
       ...helmet.contentSecurityPolicy.getDefaultDirectives(),
       "script-src": ["'self'", "https://checkout.razorpay.com", "https://cdn.razorpay.com"],
-      "frame-src": ["'self'", "https://api.razorpay.com", "https://checkout.razorpay.com"],
+      "frame-src": ["'self'", "https://api.razorpay.com", "https://checkout.razorpay.com", "https://www.youtube.com", "https://www.youtube-nocookie.com"],
       "img-src": ["'self'", "data:", "https:"]
     }
   }
