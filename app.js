@@ -299,6 +299,35 @@ document.querySelector("#care-button").addEventListener("click", () => showToast
 document.querySelector("#learn-button").addEventListener("click", () => { document.querySelector("#learn").scrollIntoView({behavior:"smooth"}); showToast("Choose a friendly lesson to begin learning."); });
 document.querySelectorAll(".lesson").forEach(lesson => lesson.addEventListener("click", () => showToast(`${lesson.dataset.lesson} lesson selected. Your learning partner will guide you.`)));
 
+const demoModal = document.querySelector("#demo-modal");
+const demoSteps = [
+    {title:"Welcome to e shara app", copy:"A simple, respectful platform where people can earn, learn, receive care and enjoy their time.", target:"#my-dashboard"},
+    {title:"1. Create an account and dashboard", copy:"Create a customer or seller account, then use your dashboard to see support, wellness, learning and earning tools in one place.", target:"#my-dashboard"},
+    {title:"2. Shop handmade products", copy:"Browse Mitti, Bamboo, Silk and recycled products. Customers can add products to a cart and place an order.", target:"#shop"},
+    {title:"3. Get health and wellness support", copy:"Find nearby clinics, request an appointment and start a gentle assisted yoga or breathing session.", target:"#health-support"},
+    {title:"4. Learn and earn with dignity", copy:"Choose a beginner-friendly skill lesson or register for funding to get help with tools and opportunities.", target:"#learn"},
+    {title:"5. Enjoy entertainment and community", copy:"Watch safe videos, listen to stories and enjoy music. Family members can add YouTube videos in the Entertainment corner.", target:"#entertainment"}
+];
+let demoIndex = 0;
+function renderDemoStep() {
+    const step = demoSteps[demoIndex];
+    document.querySelector("#demo-number").textContent = `${demoIndex + 1} / ${demoSteps.length}`;
+    document.querySelector("#demo-title").textContent = step.title;
+    document.querySelector("#demo-copy").textContent = step.copy;
+    document.querySelector("#demo-progress-bar").style.width = `${((demoIndex + 1) / demoSteps.length) * 100}%`;
+    document.querySelector("#demo-next-button").textContent = demoIndex === demoSteps.length - 1 ? "Finish demo ✓" : "Next step →";
+}
+function openDemo() { demoIndex = 0; renderDemoStep(); demoModal.hidden = false; }
+document.querySelector("#demo-button").addEventListener("click", openDemo);
+document.querySelector(".demo-close").addEventListener("click", () => { demoModal.hidden = true; });
+document.querySelector("#demo-skip-button").addEventListener("click", () => { demoModal.hidden = true; });
+demoModal.addEventListener("click", event => { if (event.target === demoModal) demoModal.hidden = true; });
+document.querySelector("#demo-next-button").addEventListener("click", () => {
+    if (demoIndex === demoSteps.length - 1) { demoModal.hidden = true; showToast("Demo complete. Explore e shara app at your own pace."); return; }
+    demoIndex += 1;
+    renderDemoStep();
+});
+
 const videoModal = document.querySelector("#video-modal");
 const videoForm = document.querySelector("#video-form");
 const videoGrid = document.querySelector("#video-grid");
