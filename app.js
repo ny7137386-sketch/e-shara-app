@@ -210,6 +210,42 @@ document.querySelector("#login-form").addEventListener("submit", async event => 
         showToast(`Welcome back, ${data.user.name}!`);
     } catch (error) { showToast(error.message); }
 });
+const loginForm = document.querySelector("#login-form");
+const registerForm = document.querySelector("#register-form");
+const loginTab = document.querySelector("#login-tab");
+const registerTab = document.querySelector("#register-tab");
+function setAuthMode(mode) {
+    const registering = mode === "register";
+    loginForm.hidden = registering;
+    registerForm.hidden = !registering;
+    loginTab.classList.toggle("active", !registering);
+    registerTab.classList.toggle("active", registering);
+    loginTab.setAttribute("aria-selected", String(!registering));
+    registerTab.setAttribute("aria-selected", String(registering));
+    document.querySelector("#login-title").textContent = registering ? "Create your e shara account" : "Log in to e shara app";
+    document.querySelector("#auth-note").textContent = registering ? "Create an account to use your dashboard, cart, appointments and support tools." : "Use Create account if you are visiting e shara app for the first time.";
+}
+loginTab.addEventListener("click", () => setAuthMode("login"));
+registerTab.addEventListener("click", () => setAuthMode("register"));
+registerForm.addEventListener("submit", async event => {
+    event.preventDefault();
+    const email = document.querySelector("#register-email").value.trim();
+    const password = document.querySelector("#register-password").value;
+    if (password !== document.querySelector("#register-confirm-password").value) return showToast("Passwords do not match.");
+    try {
+        await apiFetch("/auth/register", {method:"POST", body:JSON.stringify({
+            name:document.querySelector("#register-name").value.trim(),
+            email,
+            phone:document.querySelector("#register-phone").value.trim() || undefined,
+            password,
+            role:document.querySelector("#register-role").value
+        })});
+        registerForm.reset();
+        setAuthMode("login");
+        document.querySelector("#email").value = email;
+        showToast("Account created. Please log in with your new password.");
+    } catch (error) { showToast(error.message); }
+});
 
 const managerModal = document.querySelector("#manager-modal");
 const managerTitle = document.querySelector("#manager-title");
